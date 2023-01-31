@@ -4,19 +4,48 @@ if (isset($_POST['name']) && isset($_POST['firstname']) && isset($_POST['email']
     $firstname = $_POST['firstname'];
     $email = $_POST['email'];
     $comment = $_POST['comment'];
-    try {
-        $db = new PDO('mysql:host=localhost;dbname=hackers_poulette;charset=utf8', 'root', '');
 
-        $insertValue = "INSERT INTO form (name, firstname, email, comment) VALUES (?, ?, ?, ?)";
+    $valid = true;
 
-        $insert = $db->prepare($insertValue);
-
-        $insert->execute([$name, $firstname, $email, $comment]);
-    } catch (\Throwable $th) {
-        echo 'error' . $th->getMessage();
+    if (empty($name) || strlen($name) < 2) {
+        $valid = false;
+        echo 'The name must be more than 2 characters long.<br>';
     }
-    header("location: index.php");
+
+    if (empty($firstname) || strlen($firstname) < 2) {
+        $valid = false;
+        echo 'The firstname must be more than 2 characters long.<br>';
+    }
+
+    if (empty($comment) || strlen($comment) < 250) {
+        $valid = false;
+        echo 'The comment must be between 250 and 1000 characters long.<br>';
+    }
+
+    // Validation de l'adresse e-mail
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $valid = false;
+        echo 'The email is not valid.';
+    }
+
+    if ($valid) {
+        try {
+            $db = new PDO('mysql:host=localhost;dbname=hackers_poulette;charset=utf8', 'root', '');
+
+            $insertValue = "INSERT INTO form (name, firstname, email, comment) VALUES (?, ?, ?, ?)";
+
+            $insert = $db->prepare($insertValue);
+
+            $insert->execute([$name, $firstname, $email, $comment]);
+        } catch (\Throwable $th) {
+            echo 'error' . $th->getMessage();
+        }
+
+        header("location: index.php");
+    }
 }
+
+
 ?>
 
 <!DOCTYPE html>
@@ -42,7 +71,7 @@ if (isset($_POST['name']) && isset($_POST['firstname']) && isset($_POST['email']
         <input type="email" id="email" name="email" required minlength="2" maxlength="255" placeholder="ex. john.doe@example.com">
         <br>
         <label for="comment">Comment:</label>
-        <textarea id="comment" name="comment" required minlength="1" maxlength="1000"></textarea>
+        <textarea id="comment" name="comment" minlength="250" maxlength="1000" required></textarea>
         <br>
         <input type="submit" value="Submit" name="submit">
     </form>
