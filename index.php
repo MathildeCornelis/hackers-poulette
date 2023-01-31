@@ -4,7 +4,6 @@ if (isset($_POST['name']) && isset($_POST['firstname']) && isset($_POST['email']
     $firstname = $_POST['firstname'];
     $email = $_POST['email'];
     $comment = $_POST['comment'];
-
     $valid = true;
 
     if (empty($name) || strlen($name) < 2) {
@@ -22,7 +21,6 @@ if (isset($_POST['name']) && isset($_POST['firstname']) && isset($_POST['email']
         echo 'The comment must be between 250 and 1000 characters long.<br>';
     }
 
-    // Validation de l'adresse e-mail
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $valid = false;
         echo 'The email is not valid.';
@@ -45,6 +43,17 @@ if (isset($_POST['name']) && isset($_POST['firstname']) && isset($_POST['email']
     }
 }
 
+if (isset($_POST['submit'])) {
+    $captcha = $_POST['g-recaptcha-response'];
+    $secret = "6Lebcj4kAAAAAE-W2JVaT5XaoqZMIaCx0pdzDEEB";
+    $verify = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret={$secret}&response={$captcha}");
+    $response = json_decode($verify);
+    if (!$response->success) {
+        echo "CAPTCHA verification failed.";
+        return;
+    }
+}
+
 
 ?>
 
@@ -55,6 +64,7 @@ if (isset($_POST['name']) && isset($_POST['firstname']) && isset($_POST['email']
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <title>Hackers Poulette Form</title>
 </head>
 
@@ -73,6 +83,8 @@ if (isset($_POST['name']) && isset($_POST['firstname']) && isset($_POST['email']
         <label for="comment">Comment:</label>
         <textarea id="comment" name="comment" minlength="250" maxlength="1000" required></textarea>
         <br>
+        <div class="g-recaptcha" data-sitekey="6Lebcj4kAAAAAIcHObIdIlgSgvHkNTQZkaCGP8NF">
+        </div>
         <input type="submit" value="Submit" name="submit">
     </form>
 </body>
